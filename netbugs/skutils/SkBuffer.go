@@ -5,6 +5,10 @@ import (
 	"os"
 )
 
+// 用于大量数据处理的优化，动态伸缩，数据安块存放，块大小可以初始化时定义，当一块数据被写满后动态生成新的块
+// 应用情景：大文件在内存中写好后一次性写入磁盘，优化字符串拼接速度和文件写速度；大容量数据缓冲池
+// 提供更大的缓冲区功能，可以实现大量
+
 type SkBuffer struct {
 	buffer_block_size int
 	buffer_block_num  int
@@ -14,6 +18,7 @@ type SkBuffer struct {
 	cur_pos         int
 }
 
+// 外部调用1，初始化
 func (buffer *SkBuffer) InitBuffer(buffer_block_size int) {
 
 	buffer.buffer_block_size = buffer_block_size
@@ -31,6 +36,7 @@ func (buffer *SkBuffer) InitBuffer(buffer_block_size int) {
 
 }
 
+// 一般不要外部直接调用
 func (buffer *SkBuffer) AddElement(block_num int) {
 
 	for i := 0; i < block_num; i++ {
@@ -40,6 +46,7 @@ func (buffer *SkBuffer) AddElement(block_num int) {
 	buffer.buffer_block_num += block_num
 }
 
+// 外部调用2，添加数据
 func (buffer *SkBuffer) Append(data_src []byte, data_size int) {
 
 	// 能够放下数据
@@ -110,6 +117,7 @@ func (buffer *SkBuffer) Append(data_src []byte, data_size int) {
 
 }
 
+// 外部调用3，写文件
 func (buffer *SkBuffer) WriteToFile(fileName string) error {
 
 	f, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
